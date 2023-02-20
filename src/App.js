@@ -1,15 +1,18 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { useState } from "react";
-import turkishWords from "./Words/TurkishWords";
+import TurkishWords from "./Words/TurkishWords";
 
 function App() {
-  const [words, setWords] = useState(turkishWords);
-
+  const words = useState(TurkishWords);
 
   return (
     <div>
-      <div>{words[10]}</div>
+      <div className="mx-auto">
+        <div className="">
+          <option selected value="Turkish">Turkish</option>
+          <option value="English">English</option>
+        </div>
+      </div>
     </div>
   );
 }

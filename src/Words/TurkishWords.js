@@ -1,4 +1,4 @@
-const turkishWords = [
+const TurkishWords = [
 "getirmek",
 "yüzde",
 "olay",
@@ -199,4 +199,4 @@ const turkishWords = [
 "insan",
 "genç",
 ];
-export default turkishWords;
+export default TurkishWords;
