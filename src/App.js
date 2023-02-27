@@ -22,9 +22,9 @@ function App() {
 
   useEffect(() => {
     if (language === "Turkish") {
-      setWords(turkishWords);
+      setWords(shuffle(turkishWords));
     } else {
-      setWords(englishWords);
+      setWords(shuffle(englishWords));
     }
     
   }, [language]);
