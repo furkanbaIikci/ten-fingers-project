@@ -211,7 +211,7 @@ function App() {
             id="userInput"
             type="text"
             className="block w-2/4 h-12 text-2xl pl-5 rounded-md mx-auto mt-8 bg-slate-300"
-            onChange={(e) => setUserInput(e.target.value)}
+            onChange={(e) => setUserInput((e.target.value).toLowerCase())}
             value={timer === 0 ? "" : userInput}
             autoComplete="off"
             placeholder={
