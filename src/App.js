@@ -22,11 +22,11 @@ function App() {
 
   useEffect(() => {
     if (language === "Turkish") {
-      setWords(shuffle(turkishWords));
+      setWords(turkishWords);
     } else {
-      setWords(shuffle(englishWords));
+      setWords(englishWords);
     }
-    resetGame();
+    
   }, [language]);
 
   /* Oyun basinda kelimeleri karistiran fonksiyon. */
@@ -93,7 +93,7 @@ function App() {
   useEffect(() => {
     
     /* sayfa yenilemede calismamasi icin bos kontrolu yapildi */
-    if (!isStarted && userInput != "") {
+    if (!isStarted && userInput !== "") {
       startTimer();
     }
 
@@ -112,7 +112,7 @@ function App() {
         word.style =
           "background-color: transparent; text-decoration: line-through; opacity: 0.5;";
         console.log();
-        if (word.offsetTop != afterWord.offsetTop) {
+        if (word.offsetTop !== afterWord.offsetTop) {
           document.getElementById("wordDiv").scrollTop += 50;
         }
 
@@ -122,7 +122,7 @@ function App() {
         }
         setWordIndex(wordIndex + 1);
       } else {
-        userInputFunction();
+        userInputFunction(); 
       }
     }
   }, [userInput]);
