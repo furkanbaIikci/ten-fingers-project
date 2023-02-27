@@ -7,18 +7,18 @@ function App() {
   const turkishWords = TurkishWords;
   const englishWords = EnglishWords;
 
-  const wordRef = useRef([]);
+  let wordTemp = "";
+  const inputRef = useRef();
 
   const [words, setWords] = useState([]);
   const [language, setLanguage] = useState("Turkish");
-  const [timer, setTimer] = useState(5);
+  const [timer, setTimer] = useState(60);
   const [userInput, setUserInput] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
-
   const [isStarted, setIsStarted] = useState(false);
-
   const [correctWords, setCorrectWords] = useState(0);
   const [wrongWords, setWrongWords] = useState(0);
+  const [hideTimer, setHideTimer] = useState(false);
 
   useEffect(() => {
     if (language === "Turkish") {
@@ -26,6 +26,7 @@ function App() {
     } else {
       setWords(shuffle(englishWords));
     }
+    resetGame();
   }, [language]);
 
   /* Oyun basinda kelimeleri karistiran fonksiyon. */
@@ -48,38 +49,38 @@ function App() {
 
   /* Zamanlayıcıyı baslatan fonksiyon */
   const startTimer = () => {
-    if (!isStarted) {
-      let time = timer;
-      const interval = setInterval(() => {
-        time--;
-        setTimer(time);
-        if (time === 0) {
-          document.getElementById("userInput").placeHolder =
-            language === "Turkish" ? "Süre Bitti" : "Time over";
-          setIsStarted(false);
-          clearInterval(interval);
-        }
-      }, 1000);
-    }
+    let time = timer;
+    const interval = setInterval(() => {
+      setIsStarted(true);
+      time--;
+      setTimer(time);
+      if (time === 0) {
+        setHideTimer(false);
+        document.getElementById("userInput").placeHolder =
+          language === "Turkish" ? "Süre Bitti" : "Time over";
+        setIsStarted(false);
+        clearInterval(interval);
+      }
+    }, 1000);
   };
 
-  /* Kullanıcının girdigi kelimelerin dogru olup olmadigini kontrol eden fonksiyon */
-  /*   const checkWord = (e) => {
-    if (e.keyCode == 32) {
-      if (words[wordIndex] === userInput) {
-        setCorrectWords(correctWords + 1);
-      } else {
-        setWrongWords(wrongWords + 1);
-      }
-      setWordIndex(wordIndex + 1);
-      document.getElementById('userInput').value = '';
-      setUserInput('');
-    } else {
-      userInputFunction();
-    }
-  }; */
+  const resetGame = () => {
+    setCorrectWords(0);
+    setWrongWords(0);
+    setTimer(60);
+    setWordIndex(0);
+    setUserInput("");
+    setIsStarted(false);
+    shuffle(words);
 
-  const userInputFunction = async () => {
+    /* reset word styles */
+    words.forEach((word, index) => {
+      document.getElementById(index).style =
+        "background-color: transparent; text-decoration: none; opacity: 1;";
+    });
+  };
+
+  const userInputFunction = () => {
     if (userInput.length > 0) {
       if (words[wordIndex].startsWith(userInput)) {
         document.getElementById(wordIndex).style.backgroundColor = "green";
@@ -89,40 +90,58 @@ function App() {
     }
   };
 
-  const userInputControl = (e) => {
-    setUserInput(e.target.value);
-  };
-
   useEffect(() => {
-    if (userInput.includes(" ")) {
-      setUserInput(userInput.slice(0, -1));
-      if (words[wordIndex] === userInput) {
-        setCorrectWords(correctWords + 1);
+    
+    /* sayfa yenilemede calismamasi icin bos kontrolu yapildi */
+    if (!isStarted && userInput != "") {
+      startTimer();
+    }
+
+    if (words.length > wordIndex ) {
+      if (userInput.includes(" ")) {
+        wordTemp = userInput.slice(0, -1);
+        if (words[wordIndex] === wordTemp) {
+          setCorrectWords(correctWords + 1);
+        } else {
+          setWrongWords(wrongWords + 1);
+        }
+
+        setUserInput("");
+        let word = document.getElementById(wordIndex);
+        let afterWord = document.getElementById(wordIndex + 1);
+        word.style =
+          "background-color: transparent; text-decoration: line-through; opacity: 0.5;";
+        console.log();
+        if (word.offsetTop != afterWord.offsetTop) {
+          document.getElementById("wordDiv").scrollTop += 50;
+        }
+
+        if (wordIndex < words.length - 1) {
+          document.getElementById(wordIndex + 1).style =
+            "background-color: white; border-radius: 5px;";
+        }
+        setWordIndex(wordIndex + 1);
       } else {
-        setWrongWords(wrongWords + 1);
+        userInputFunction();
       }
-      setWordIndex(wordIndex + 1);
-      setUserInput("");
-      document.getElementById(wordIndex).style.backgroundColor = "transparent";
-      document.getElementById(wordIndex + 1).style = {
-        backgroundColor: "white",
-        borderRadius: "5px",
-      };
-    } else {
-      userInputFunction();
     }
   }, [userInput]);
 
   return (
     <div>
-      <div className="mx-auto text-center">
+      <div
+        className="mx-auto text-center"
+        style={isStarted ? { opacity: "0.7" } : {}}
+      >
         <div className="mt-10">
           <input
+            id="Turkish"
             type="radio"
             name="language"
             onClick={() => setLanguage("Turkish")}
             defaultChecked
             value="Turkish"
+            disabled={isStarted}
           />
           <label style={{ fontSize: "30px" }} htmlFor="Turkish">
             {" "}
@@ -130,10 +149,12 @@ function App() {
           </label>
           <div />
           <input
+            id="English"
             type="radio"
             name="language"
             onClick={() => setLanguage("English")}
             value="English"
+            disabled={isStarted}
           />
           <label style={{ fontSize: "30px" }} htmlFor="English">
             {" "}
@@ -150,51 +171,83 @@ function App() {
         </div>
         <input
           id="timer"
-          type="text"
-          value={timer}
+          type="number"
+          min="1"
+          value={hideTimer ? '' : timer}
           onChange={(e) => setTimer(e.target.value)}
           className="block w-32 h-12 text-2xl pl-5 rounded-md mx-auto mt-3 bg-slate-300"
+          disabled={isStarted}
+          style={isStarted ? { opacity: "0.7" } : {}}
         />
+        <div className="text-center mt-4"> 
+          <input type='checkbox' checked={hideTimer} onChange={() => setHideTimer(!hideTimer)} />
+          <label htmlFor="timer"> {language === "Turkish" ? "Süreyi gizle" : "Hide Timer"} </label>
+        </div>
       </div>
+      
 
       <div>
-        <div className="w-2/3 mx-auto mt-16 h-64 bg-slate-300 rounded-lg border-2 border-solid border-black overflow-auto 	 ">
+        <div
+          id="wordDiv"
+          className="w-2/3 mx-auto mt-16 h-64 bg-slate-300 rounded-lg border-1 border-solid border-gray-500 overflow-hidden 	 "
+        >
           {words.map((word, index) => {
             return (
-              <span
+              <p
                 key={index}
-                style={{ backgroundColor: "transparent" }}
-                ref={wordRef.current[index]}
                 id={index}
                 className="my-2 inline-block mx-4 text-3xl"
               >
                 {word}
-              </span>
+              </p>
             );
           })}
         </div>
       </div>
       <div>
         <div className="">
-          <form>
-            <input
-              id="userInput"
-              type="text"
-              className="block w-2/4 h-12 text-2xl pl-5 rounded-md mx-auto mt-8 bg-slate-300"
-              onClick={startTimer}
-              onChange={(e) => userInputControl(e)}
-              value={timer === 0 ? "" : userInput}
-              placeholder={
-                timer === 0
-                  ? language === "Turkish"
-                    ? "Süre doldu"
-                    : "Timer over"
-                  : ""
-              }
-              disabled={timer === 0 ? true : false}
-            />
-          </form>
+          <input
+            ref={inputRef}
+            id="userInput"
+            type="text"
+            className="block w-2/4 h-12 text-2xl pl-5 rounded-md mx-auto mt-8 bg-slate-300"
+            onChange={(e) => setUserInput(e.target.value)}
+            value={timer === 0 ? "" : userInput}
+            autoComplete="off"
+            placeholder={
+              timer === 0
+                ? language === "Turkish"
+                  ? "Süre doldu!"
+                  : "Timer over!"
+                : ""
+            }
+            disabled={timer === 0 ? true : false}
+          />
         </div>
+        {timer === 0 && (
+          <div className="text-center">
+            <div className="text-2xl mt-8">
+              {language === "Turkish"
+                ? "Doğru Kelime Sayısı: "
+                : "Correct Word Count: "}
+              {correctWords}
+            </div>
+            <div className="text-2xl mt-8">
+              {language === "Turkish"
+                ? "Yanlış Kelime Sayısı: "
+                : "Wrong Word Count: "}
+              {wrongWords}
+            </div>
+            <div className="mt-8">
+              <button
+                className="bg-blue-400 text-2xl text-white p-1 rounded-md"
+                onClick={resetGame}
+              >
+                {language === "Turkish" ? "Tekrar başlat" : "Restart"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
